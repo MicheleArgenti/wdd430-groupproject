@@ -51,3 +51,8 @@ Revolutionize the way handcrafted items are discovered, appreciated, and acquire
 - Emphasize customization and personal connection
 - Support sustainable consumption practices
 - Getting Started
+
+# Group members:
+
+- Michele Argenti
+- Silvia Castagnino
