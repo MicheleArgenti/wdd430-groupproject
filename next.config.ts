@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Disable PostCSS since we're not using Tailwind
+  experimental: {
+    optimizeCss: false,
+  },
 };
 
 export default nextConfig;

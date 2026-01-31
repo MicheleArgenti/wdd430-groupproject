@@ -4,6 +4,14 @@ import bcrypt from 'bcryptjs';
 import connectDB from '@/lib/db';
 import User from '@/models/User';
 
+// Define custom user type
+interface CustomUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+}
+
 const handler = NextAuth({
   providers: [
     CredentialsProvider({
@@ -12,7 +20,7 @@ const handler = NextAuth({
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials) {
+      async authorize(credentials): Promise<CustomUser | null> {
         if (!credentials?.email || !credentials?.password) {
           throw new Error('Please enter email and password');
         }
@@ -43,22 +51,27 @@ const handler = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = user.role;
-        token.id = user.id;
+        // Type assertion for custom user properties
+        const customUser = user as CustomUser;
+        token.role = customUser.role;
+        token.id = customUser.id;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.role = token.role;
-        session.user.id = token.id;
+        // Add custom properties to session
+        (session.user as any).role = token.role;
+        (session.user as any).id = token.id;
       }
       return session;
     },
   },
   pages: {
     signIn: '/login',
-    signUp: '/register',
+    // Note: 'signUp' is not a valid option in NextAuth PagesOptions
+    // The 'newUser' page is for OAuth providers after first sign in
+    // We handle registration separately with our own /register page
     error: '/auth/error',
   },
   session: {
@@ -67,4 +80,4 @@ const handler = NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
 });
 
-export { handler as GET, handler as PUT };
+export { handler as GET, handler as POST };
