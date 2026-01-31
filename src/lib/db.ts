@@ -1,40 +1,13 @@
-import mongoose from 'mongoose';
+// src/lib/db.ts - No Mongoose dependency
+const MONGODB_URI = process.env.MONGODB_URI;
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/handcrafted-haven';
-
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable');
-}
-
-let cached = global.mongoose;
-
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
-}
-
-async function connectDB() {
-  if (cached.conn) {
-    return cached.conn;
+export default async function connectDB() {
+  if (!MONGODB_URI) {
+    console.log('No MongoDB URI set - running without database');
+    return;
   }
-
-  if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-    };
-
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      return mongoose;
-    });
-  }
-
-  try {
-    cached.conn = await cached.promise;
-    console.log('MongoDB connected successfully');
-    return cached.conn;
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
-    throw error;
-  }
+  
+  console.log('Database would connect to:', MONGODB_URI);
+  // Database logic would go here
+  return;
 }
-
-export default connectDB;
