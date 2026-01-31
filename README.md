@@ -1,58 +1,36 @@
-# Handcrafted Haven
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Overview
+## Getting Started
 
-Handcrafted Haven is an innovative web application that provides a platform for artisans and crafters to showcase and sell their unique handcrafted items. It serves as a virtual marketplace connecting talented creators with customers who appreciate the beauty and quality of handmade products. The application focuses on fostering community, supporting local artisans, and promoting sustainable consumption.
+First, run the development server:
 
-## Vision
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
 
-Revolutionize the way handcrafted items are discovered, appreciated, and acquired by providing a digital platform for artisans to showcase their creativity and connect with a broader audience. Handcrafted Haven fosters a thriving community of passionate creators and conscious consumers.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Key Features
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-### For Sellers
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-- Seller Profiles: Dedicated profiles for artisans to showcase craftsmanship, share stories, and display curated collections
-- Product Listings: Ability to list handcrafted items with descriptions, pricing, and images
-- Storytelling: Share artisan journeys and creation processes
+## Learn More
 
-### For Buyers
+To learn more about Next.js, take a look at the following resources:
 
-- Product Discovery: Browse catalog with filtering by category, price range, and other criteria
-- Reviews & Ratings: Leave ratings and written reviews for products
-- Community Engagement: Connect with artisans and fellow enthusiasts
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-## Technical Specifications
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-### Design Standards
+## Deploy on Vercel
 
-- Performance: Optimized for speed and efficiency
-- Validation: Comprehensive form and data validation
-- Accessibility: WCAG 2.1, Level AA compliance
-- SEO: Search engine optimized
-- Usability: Intuitive user experience
-- Responsive Design: Seamless experience across all devices
-- Branding: Consistent color scheme, typography, and layout
-- Navigation: Clear, intuitive structure with logical hierarchy
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-## Technology Stack
-
-- Front-End: HTML, CSS, JavaScript, Next.js
-- Back-End: Node.js, Database
-- Project Management: GitHub Boards
-- Code Management: Git and GitHub Repository
-- Deployment: Vercel
-
-## Project Goals
-
-- Create a user-friendly marketplace for handmade goods
-- Build a supportive community for artisans
-- Implement secure e-commerce capabilities
-- Emphasize customization and personal connection
-- Support sustainable consumption practices
-- Getting Started
-
-# Group members:
-
-- Michele Argenti
-- Silvia Castagnino
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
