@@ -4,6 +4,7 @@ const ProductSchema = new mongoose.Schema({
   title: {
     type: String,
     required: [true, 'Please provide a product title'],
+    trim: true,
     maxlength: [100, 'Title cannot be more than 100 characters'],
   },
   description: {
@@ -46,6 +47,27 @@ const ProductSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+}, {
+  timestamps: true,
+  collection: 'products',
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
+});
+
+// Virtual for formatted date
+ProductSchema.virtual('formattedDate').get(function() {
+  return this.createdAt.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+});
+
+// Virtual for stock status
+ProductSchema.virtual('stockStatus').get(function() {
+  if (this.stock > 10) return 'In Stock';
+  if (this.stock > 0) return 'Low Stock';
+  return 'Out of Stock';
 });
 
 export default mongoose.models.Product || mongoose.model('Product', ProductSchema);

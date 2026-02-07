@@ -1,10 +1,8 @@
-import Header from '@/components/layout/Header';
 import ProductList from '@/components/products/ProductList';
 
 export default async function HomePage() {
   return (
     <div className="min-h-screen">
-      <Header />
       
       {/* Hero Section */}
       <section className="hero">

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
+import Header from '@/components/layout/Header';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -18,7 +19,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <Header />
+          <main className="min-h-screen">
+            {children}
+          </main>
+          {/* You can add a Footer here too */}
+          <footer className="bg-gray-900 text-white py-8 text-center">
+            <div className="container mx-auto px-4">
+              <p>© 2024 Handcrafted Haven. All rights reserved.</p>
+            </div>
+          </footer>
+        </Providers>
       </body>
     </html>
   );
