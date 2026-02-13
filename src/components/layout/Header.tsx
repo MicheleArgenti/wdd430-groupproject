@@ -32,7 +32,7 @@ export default function Header() {
               Categories
             </Link>
             {user?.role === 'seller' && (
-              <Link href="/dashboard/seller" className="text-gray-700 hover:text-amber-600 transition">
+              <Link href="/seller" className="text-gray-700 hover:text-amber-600 transition">
                 Seller Dashboard
               </Link>
             )}
@@ -75,13 +75,22 @@ export default function Header() {
                       My Profile
                     </Link>
                     {user?.role === 'seller' && (
-                      <Link
-                        href="/dashboard/seller"
-                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Seller Dashboard
-                      </Link>
+                      <>
+                        <Link
+                          href="/seller"
+                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Seller Dashboard
+                        </Link>
+                        <Link
+                          href="/products/add"
+                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Add Product
+                        </Link>
+                      </>
                     )}
                     <Link
                       href="/orders"
@@ -89,13 +98,6 @@ export default function Header() {
                       onClick={() => setIsMenuOpen(false)}
                     >
                       My Orders
-                    </Link>
-                    <Link
-                      href="/settings"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Settings
                     </Link>
                     <div className="border-t my-2"></div>
                     <button
