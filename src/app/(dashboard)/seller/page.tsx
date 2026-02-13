@@ -1,6 +1,6 @@
-export const dynamic = 'force-dynamic';
 'use client';
 
+import { Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -16,7 +16,8 @@ interface Product {
   createdAt: string;
 }
 
-export default function SellerDashboard() {
+// Separate component that uses useSearchParams
+function DashboardContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -26,8 +27,8 @@ export default function SellerDashboard() {
   const [showSuccess, setShowSuccess] = useState('');
   const [showError, setShowError] = useState('');
 
+  // Handle search params
   useEffect(() => {
-    // Check for success/error messages
     if (searchParams.get('success') === 'product_added') {
       setShowSuccess('Product added successfully!');
       setTimeout(() => setShowSuccess(''), 5000);
@@ -46,6 +47,7 @@ export default function SellerDashboard() {
     }
   }, [searchParams]);
 
+  // Auth and data fetching
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
@@ -64,7 +66,6 @@ export default function SellerDashboard() {
       const res = await fetch('/api/products');
       const data = await res.json();
       
-      // Filter products by seller ID
       const user = session?.user as any;
       const sellerProducts = data.filter((p: any) => p.seller?._id === user.id);
       setProducts(sellerProducts);
@@ -76,9 +77,7 @@ export default function SellerDashboard() {
   };
 
   const handleDelete = async (productId: string) => {
-    if (!confirm('Are you sure you want to delete this product?')) {
-      return;
-    }
+    if (!confirm('Are you sure you want to delete this product?')) return;
 
     try {
       const res = await fetch(`/api/products/${productId}`, {
@@ -86,7 +85,6 @@ export default function SellerDashboard() {
       });
 
       if (res.ok) {
-        // Remove product from state
         setProducts(products.filter(p => p._id !== productId));
         setShowSuccess('Product deleted successfully!');
         setTimeout(() => setShowSuccess(''), 3000);
@@ -102,17 +100,13 @@ export default function SellerDashboard() {
     try {
       const res = await fetch(`/api/products/${productId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: !currentStatus }),
       });
 
       if (res.ok) {
         setProducts(products.map(p => 
-          p._id === productId 
-            ? { ...p, isActive: !currentStatus }
-            : p
+          p._id === productId ? { ...p, isActive: !currentStatus } : p
         ));
       }
     } catch (error) {
@@ -124,15 +118,12 @@ export default function SellerDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center">Loading dashboard...</div>
-        </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">Loading dashboard...</div>
       </div>
     );
   }
 
-  // Calculate stats
   const stats = {
     totalProducts: products.length,
     activeProducts: products.filter(p => p.isActive).length,
@@ -222,21 +213,11 @@ export default function SellerDashboard() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Product
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Price
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Stock
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -246,16 +227,8 @@ export default function SellerDashboard() {
                         <div className="font-medium text-gray-900">{product.title}</div>
                         <div className="text-sm text-gray-500 capitalize">{product.category}</div>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="text-gray-900">${product.price.toFixed(2)}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`text-sm ${
-                          product.stock > 0 ? 'text-gray-900' : 'text-red-600 font-medium'
-                        }`}>
-                          {product.stock} units
-                        </span>
-                      </td>
+                      <td className="px-6 py-4">${product.price.toFixed(2)}</td>
+                      <td className="px-6 py-4">{product.stock} units</td>
                       <td className="px-6 py-4">
                         <button
                           onClick={() => toggleProductStatus(product._id, product.isActive)}
@@ -270,25 +243,9 @@ export default function SellerDashboard() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex space-x-3">
-                          <Link
-                            href={`/products/${product._id}/edit`}
-                            className="text-amber-600 hover:text-amber-900 text-sm font-medium"
-                          >
-                            Edit
-                          </Link>
-                          <Link
-                            href={`/products/${product._id}`}
-                            className="text-blue-600 hover:text-blue-900 text-sm font-medium"
-                            target="_blank"
-                          >
-                            View
-                          </Link>
-                          <button
-                            onClick={() => handleDelete(product._id)}
-                            className="text-red-600 hover:text-red-900 text-sm font-medium"
-                          >
-                            Delete
-                          </button>
+                          <Link href={`/products/${product._id}/edit`} className="text-amber-600 hover:text-amber-900 text-sm font-medium">Edit</Link>
+                          <Link href={`/products/${product._id}`} className="text-blue-600 hover:text-blue-900 text-sm font-medium" target="_blank">View</Link>
+                          <button onClick={() => handleDelete(product._id)} className="text-red-600 hover:text-red-900 text-sm font-medium">Delete</button>
                         </div>
                       </td>
                     </tr>
@@ -300,5 +257,21 @@ export default function SellerDashboard() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Main component with Suspense wrapper
+export default function SellerDashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-600 mb-4"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }
