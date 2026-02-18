@@ -1,51 +1,171 @@
-import React from 'react';
+'use client';
+
+import { useCart } from '@/context/CartContext';
+import Link from 'next/link';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 export default function CartPage() {
-  return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-      <header style={{
-        backgroundColor: 'white',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        padding: '1rem 2rem'
-      }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' }}>
-            Shopping Cart
-          </h1>
-        </div>
-      </header>
-      
-      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1rem' }}>
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '0.5rem',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          padding: '1.5rem'
-        }}>
-          <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#4b5563', marginBottom: '1rem' }}>
-              Your cart is empty
-            </h2>
-            <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
-              Add some handmade products to your cart to see them here!
-            </p>
-            <a 
-              href="/products" 
-              style={{
-                display: 'inline-block',
-                backgroundColor: '#d97706',
-                color: 'white',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '0.5rem',
-                fontWeight: '500',
-                textDecoration: 'none'
-              }}
+  const { items, removeItem, updateQuantity, totalItems, totalPrice, clearCart } = useCart();
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+
+  const handleCheckout = () => {
+    if (!session) {
+      router.push('/login?redirect=cart');
+      return;
+    }
+    
+    setIsCheckingOut(true);
+    // Simulate checkout process
+    setTimeout(() => {
+      alert('Order placed successfully! (Demo)');
+      clearCart();
+      setIsCheckingOut(false);
+      router.push('/products');
+    }, 1500);
+  };
+
+  if (items.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-white rounded-lg shadow-lg p-12 text-center">
+            <div className="text-8xl mb-6">🛒</div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Your Cart is Empty</h1>
+            <p className="text-gray-600 mb-8">Looks like you haven't added any products to your cart yet.</p>
+            <Link
+              href="/products"
+              className="inline-block bg-amber-600 text-white px-8 py-4 rounded-lg font-medium hover:bg-amber-700 transition text-lg"
             >
               Continue Shopping
-            </a>
+            </Link>
           </div>
         </div>
-      </main>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-12 px-4">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Shopping Cart ({totalItems} items)</h1>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Cart Items */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              {items.map((item) => (
+                <div key={item._id} className="p-6 border-b border-gray-200 last:border-0">
+                  <div className="flex gap-6">
+                    {/* Product Image */}
+                    <div className="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      {item.image ? (
+                        <img src={item.image} alt={item.title} className="w-full h-full object-cover rounded-lg" />
+                      ) : (
+                        <span className="text-3xl">🛍️</span>
+                      )}
+                    </div>
+
+                    {/* Product Details */}
+                    <div className="flex-1">
+                      <Link href={`/products/${item._id}`} className="text-lg font-semibold text-gray-900 hover:text-amber-600">
+                        {item.title}
+                      </Link>
+                      <p className="text-sm text-gray-500 mt-1">${item.price.toFixed(2)} each</p>
+                      
+                      <div className="flex items-center justify-between mt-4">
+                        <div className="flex items-center border border-gray-300 rounded-lg">
+                          <button
+                            onClick={() => updateQuantity(item._id, item.quantity - 1)}
+                            className="w-8 h-8 flex items-center justify-center hover:bg-gray-100"
+                            disabled={item.quantity <= 1}
+                          >
+                            −
+                          </button>
+                          <span className="w-12 text-center">{item.quantity}</span>
+                          <button
+                            onClick={() => updateQuantity(item._id, item.quantity + 1)}
+                            className="w-8 h-8 flex items-center justify-center hover:bg-gray-100"
+                            disabled={item.quantity >= item.stock}
+                          >
+                            +
+                          </button>
+                        </div>
+                        
+                        <button
+                          onClick={() => removeItem(item._id)}
+                          className="text-red-600 hover:text-red-800 text-sm font-medium"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Price */}
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-gray-900">
+                        ${(item.price * item.quantity).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Order Summary */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg shadow-lg p-6 sticky top-24">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Order Summary</h2>
+              
+              <div className="space-y-3 mb-6">
+                <div className="flex justify-between text-gray-600">
+                  <span>Subtotal ({totalItems} items)</span>
+                  <span>${totalPrice.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>Shipping</span>
+                  <span>Free</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                  <span>Tax</span>
+                  <span>Calculated at checkout</span>
+                </div>
+                <div className="border-t pt-3 mt-3">
+                  <div className="flex justify-between font-bold text-gray-900">
+                    <span>Total</span>
+                    <span>${totalPrice.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={handleCheckout}
+                disabled={isCheckingOut}
+                className="w-full bg-amber-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-amber-700 transition disabled:opacity-50 disabled:cursor-not-allowed mb-3"
+              >
+                {isCheckingOut ? 'Processing...' : 'Proceed to Checkout'}
+              </button>
+
+              <Link
+                href="/products"
+                className="block text-center text-gray-600 hover:text-amber-600 transition text-sm"
+              >
+                Continue Shopping
+              </Link>
+
+              {!session && (
+                <p className="text-sm text-gray-500 mt-4 text-center">
+                  Please <Link href="/login" className="text-amber-600 hover:text-amber-700">sign in</Link> to checkout
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

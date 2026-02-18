@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { useCart } from '@/context/CartContext'; 
 
 interface Product {
   _id: string;
@@ -25,6 +26,7 @@ export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
+  const { addItem } = useCart();
   
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -71,24 +73,28 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = async () => {
     if (!session) {
-      router.push('/login');
+      router.push(`/login?redirect=product&id=${product?._id}`);
       return;
     }
 
+    if (!product) return;
+
     setAddingToCart(true);
+    
     try {
-      console.log('Adding to cart:', { 
-        productId: product?._id, 
-        productTitle: product?.title,
-        quantity 
-      });
+      addItem({
+        _id: product._id,
+        title: product.title,
+        price: product.price,
+        image: product.images?.[0] || '',
+        stock: product.stock,
+      }, quantity);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      alert(`✅ Added ${quantity} "${product.title}" to cart!`);
       
-      alert(`Added ${quantity} "${product?.title}" to cart!`);
     } catch (error) {
-      alert('Failed to add to cart');
+      console.error('Error adding to cart:', error);
+      alert('Failed to add to cart. Please try again.');
     } finally {
       setAddingToCart(false);
     }
@@ -96,10 +102,21 @@ export default function ProductDetailPage() {
 
   const handleBuyNow = () => {
     if (!session) {
-      router.push('/login');
+      router.push(`/login?redirect=product&id=${product?._id}`);
       return;
     }
-    alert('Proceeding to checkout...');
+    
+    if (product) {
+      addItem({
+        _id: product._id,
+        title: product.title,
+        price: product.price,
+        image: product.images?.[0] || '',
+        stock: product.stock,
+      }, quantity);
+      
+      router.push('/cart');
+    }
   };
 
   if (loading) {

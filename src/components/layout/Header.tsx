@@ -3,9 +3,11 @@
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useCart } from '@/context/CartContext';
 
 export default function Header() {
   const { data: session } = useSession();
+  const { totalItems } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const user = session?.user as any;
 
@@ -43,9 +45,14 @@ export default function Header() {
 
           {/* User Actions */}
           <div className="flex items-center space-x-4">
-            <Link href="/cart" className="p-2 hover:bg-gray-100 rounded-full transition">
+            <Link href="/cart" className="p-2 hover:bg-gray-100 rounded-full transition relative">
               <span className="sr-only">Cart</span>
               🛒
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  {totalItems}
+                </span>
+              )}
             </Link>
             
             {user ? (
@@ -98,6 +105,13 @@ export default function Header() {
                       onClick={() => setIsMenuOpen(false)}
                     >
                       My Orders
+                    </Link>
+                    <Link
+                      href="/cart"
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Cart ({totalItems})
                     </Link>
                     <div className="border-t my-2"></div>
                     <button
