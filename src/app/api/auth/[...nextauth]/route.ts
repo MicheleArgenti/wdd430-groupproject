@@ -4,15 +4,7 @@ import bcrypt from 'bcryptjs';
 import connectDB from '@/lib/db';
 import User from '@/models/User';
 
-// Define custom user type
-interface CustomUser {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-}
-
-const handler = NextAuth({
+export const authOptions: any = {
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -20,7 +12,7 @@ const handler = NextAuth({
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials): Promise<CustomUser | null> {
+      async authorize(credentials: any) {
         if (!credentials?.email || !credentials?.password) {
           throw new Error('Please enter email and password');
         }
@@ -49,35 +41,33 @@ const handler = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: any) {
       if (user) {
-        // Type assertion for custom user properties
-        const customUser = user as CustomUser;
-        token.role = customUser.role;
-        token.id = customUser.id;
+        token.role = user.role;
+        token.id = user.id;
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: any) {
       if (session.user) {
-        // Add custom properties to session
-        (session.user as any).role = token.role;
-        (session.user as any).id = token.id;
+        session.user.role = token.role;
+        session.user.id = token.id;
       }
       return session;
     },
   },
   pages: {
     signIn: '/login',
-    // Note: 'signUp' is not a valid option in NextAuth PagesOptions
-    // The 'newUser' page is for OAuth providers after first sign in
-    // We handle registration separately with our own /register page
     error: '/auth/error',
   },
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60,
   },
   secret: process.env.NEXTAUTH_SECRET,
-});
+  debug: process.env.NODE_ENV === 'development',
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
