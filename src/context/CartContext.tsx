@@ -26,50 +26,74 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [initialized, setInitialized] = useState(false);
+
+  // Log when provider mounts
+  console.log('🛒 CartProvider mounted');
 
   // Load cart from localStorage on mount
   useEffect(() => {
+    console.log('🛒 useEffect running - loading from localStorage');
     setMounted(true);
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      try {
-        setItems(JSON.parse(savedCart));
-      } catch (error) {
-        console.error('Failed to parse cart:', error);
+    
+    try {
+      const savedCart = localStorage.getItem('handcrafted-cart');
+      console.log('🛒 Raw localStorage data:', savedCart);
+      
+      if (savedCart) {
+        const parsedCart = JSON.parse(savedCart);
+        console.log('🛒 Parsed cart data:', parsedCart);
+        setItems(parsedCart);
+      } else {
+        console.log('🛒 No saved cart found');
       }
+    } catch (error) {
+      console.error('🛒 Failed to parse cart:', error);
+    } finally {
+      setInitialized(true);
     }
   }, []);
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
-    if (mounted) {
-      localStorage.setItem('cart', JSON.stringify(items));
+    if (mounted && initialized) {
+      console.log('🛒 Saving to localStorage:', items);
+      localStorage.setItem('handcrafted-cart', JSON.stringify(items));
     }
-  }, [items, mounted]);
+  }, [items, mounted, initialized]);
 
   const addItem = (product: Omit<CartItem, 'quantity'>, quantity: number = 1) => {
+    console.log('🛒 Adding item to cart:', { product, quantity });
+    
     setItems(prevItems => {
       const existingItem = prevItems.find(item => item._id === product._id);
       
       if (existingItem) {
-        // Update quantity if item exists
-        return prevItems.map(item =>
+        console.log('🛒 Item exists, updating quantity');
+        const updatedItems = prevItems.map(item =>
           item._id === product._id
             ? { ...item, quantity: Math.min(item.quantity + quantity, product.stock) }
             : item
         );
+        console.log('🛒 Updated items:', updatedItems);
+        return updatedItems;
       } else {
-        // Add new item
-        return [...prevItems, { ...product, quantity: Math.min(quantity, product.stock) }];
+        console.log('🛒 Adding new item');
+        const newItem = { ...product, quantity: Math.min(quantity, product.stock) };
+        const updatedItems = [...prevItems, newItem];
+        console.log('🛒 New items:', updatedItems);
+        return updatedItems;
       }
     });
   };
 
   const removeItem = (id: string) => {
+    console.log('🛒 Removing item:', id);
     setItems(prevItems => prevItems.filter(item => item._id !== id));
   };
 
   const updateQuantity = (id: string, quantity: number) => {
+    console.log('🛒 Updating quantity:', { id, quantity });
     setItems(prevItems =>
       prevItems.map(item =>
         item._id === id
@@ -80,14 +104,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const clearCart = () => {
+    console.log('🛒 Clearing cart');
     setItems([]);
   };
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  if (!mounted) {
-    return null; // Prevent hydration mismatch
+  console.log('🛒 Current state:', { items, totalItems, totalPrice, mounted, initialized });
+
+  // Don't render children until after hydration
+  if (!mounted || !initialized) {
+    console.log('🛒 Provider not ready, showing null');
+    return null;
   }
 
   return (

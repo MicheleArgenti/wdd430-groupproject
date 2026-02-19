@@ -2,7 +2,7 @@
 
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
@@ -11,6 +11,17 @@ export default function CartPage() {
   const { data: session } = useSession();
   const router = useRouter();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Wait for component to mount to avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('🛒 CartPage rendered', { items, totalItems, mounted });
+  }, [items, totalItems, mounted]);
 
   const handleCheckout = () => {
     if (!session) {
@@ -27,6 +38,18 @@ export default function CartPage() {
       router.push('/products');
     }, 1500);
   };
+
+  // Don't render anything until after mount to prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-600 mb-4"></div>
+          <p className="text-gray-600">Loading cart...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -52,6 +75,11 @@ export default function CartPage() {
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Shopping Cart ({totalItems} items)</h1>
+
+        {/* Debug info - remove in production */}
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-800">
+          <strong>Debug:</strong> Cart has {items.length} items, total items: {totalItems}
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Cart Items */}

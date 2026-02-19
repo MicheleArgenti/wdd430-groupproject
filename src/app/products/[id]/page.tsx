@@ -72,33 +72,49 @@ export default function ProductDetailPage() {
   };
 
   const handleAddToCart = async () => {
-    if (!session) {
-      router.push(`/login?redirect=product&id=${product?._id}`);
-      return;
-    }
+  console.log('🛒 handleAddToCart called', { session: !!session, product });
+  
+  if (!session) {
+    console.log('🛒 No session, redirecting to login');
+    router.push(`/login?redirect=product&id=${product?._id}`);
+    return;
+  }
 
-    if (!product) return;
+  if (!product) return;
 
-    setAddingToCart(true);
+  setAddingToCart(true);
+  
+  try {
+    console.log('🛒 Calling addItem with:', {
+      _id: product._id,
+      title: product.title,
+      price: product.price,
+      image: product.images?.[0] || '',
+      stock: product.stock,
+      quantity
+    });
     
-    try {
-      addItem({
-        _id: product._id,
-        title: product.title,
-        price: product.price,
-        image: product.images?.[0] || '',
-        stock: product.stock,
-      }, quantity);
-      
-      alert(`✅ Added ${quantity} "${product.title}" to cart!`);
-      
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      alert('Failed to add to cart. Please try again.');
-    } finally {
-      setAddingToCart(false);
-    }
-  };
+    // Add to cart using the context
+    addItem({
+      _id: product._id,
+      title: product.title,
+      price: product.price,
+      image: product.images?.[0] || '',
+      stock: product.stock,
+    }, quantity);
+    
+    console.log('🛒 Item added to cart state');
+    
+    // Show success message
+    alert(`✅ Added ${quantity} "${product.title}" to cart!`);
+    
+  } catch (error) {
+    console.error('🛒 Error adding to cart:', error);
+    alert('Failed to add to cart. Please try again.');
+  } finally {
+    setAddingToCart(false);
+  }
+};
 
   const handleBuyNow = () => {
     if (!session) {
